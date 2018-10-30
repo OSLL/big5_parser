@@ -5,7 +5,7 @@ import argparse
 import csv
 
 def set_file(res):
-    colums = ['name', "расслабленность_напряженность",
+    colums = ["ФИО","Группа", "Url", "расслабленность_напряженность",
  "обособленность_привязанность", "пассивность_активность",
  "неаккуратность_аккуратность", "отсутствие артистичности_артистичность",
  "эмоц. устойчивость_эмоц. неустойчивость", 
@@ -37,17 +37,18 @@ def get_html(url):
 def parse_html(data, res):
     soup = BeautifulSoup(data, 'html.parser')
     row_list = soup.find('div', {'class':'stdTbl'}).find('table')
-    
     for itr in row_list:
         if not ( itr.find('td', {'class':'jFL jBF'}) == None ):
             left = itr.find('td', {'class':'jFL jBF'}).find('a').string
             right = itr.find('td', {'class':'jFR jBF'}).find('a').string
-            res_buf = itr.find('td', {'class':'jCell jCellF1L'}).nextSibling.string
+            res_buf = ((itr.find_all('td', {'class':'jCell jCellC'}))[1]).string
             res[left+'_'+right] = res_buf
+
         elif not ( itr.find('td', {'class':'jFL'}) == None ):
+
             left = itr.find('td', {'class':'jFL'}).string
             right = itr.find('td', {'class':'jFR'}).string
-            res_buf = itr.find('td', {'class':'jCell jCellF2L'}).nextSibling.string
+            res_buf = ((itr.find_all('td', {'class':'jCell jCellC'}))[1]).string
             res[left+'_'+right] = res_buf
             
     return res
@@ -58,8 +59,8 @@ def get_args():
     return parser.parse_args().filename
 
 
-def parse(url, name):
-    res = {'name' : name}
+def parse(url, name, group):
+    res = {'ФИО' : name, 'Группа' : group, 'Url' : url}
     data = get_html(url)
     res = parse_html(data, res)
     return res
@@ -72,7 +73,7 @@ def main():
         reader = csv.reader(f, delimiter = ';')
         next(reader)
         for row in reader:
-            result.append(parse(row[0], row[1]))
+            result.append(parse(row[2], row[0], row[1]))
         set_file(result)
         
 
